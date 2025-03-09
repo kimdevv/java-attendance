@@ -2,6 +2,7 @@ package attendance.domain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -20,16 +21,24 @@ public class AttendanceBook {
         }
     }
 
-    public void validateDuplicateAttendanceDate(final Crew crew, final AttendanceDateTime attendanceDateTime) {
+    public void saveAttendanceDateTime(final Crew crew, final AttendanceDateTime attendanceDateTime) {
+        validateDuplicateAttendanceDate(crew, attendanceDateTime);
+        Attendances attendances = this.crewAttedances.get(crew);
+        attendances.addAttendanceDateTime(attendanceDateTime);
+    }
+
+    private void validateDuplicateAttendanceDate(final Crew crew, final AttendanceDateTime attendanceDateTime) {
         Attendances attendances = this.crewAttedances.get(crew);
         if (attendances.isSameDateExists(attendanceDateTime)) {
             throw new IllegalArgumentException("오늘은 이미 출석하셨습니다. 출석 수정 기능을 이용해 주세요.");
         }
     }
 
-    public void saveAttendanceDateTime(final Crew crew, final AttendanceDateTime attendanceDateTime) {
-        Attendances attendances = this.crewAttedances.get(crew);
-        attendances.addAttendanceDateTime(attendanceDateTime);
+    public AttendanceDateTime changeCrewAttendanceTime(final Crew crew, final AttendanceDateTime originalDateTime, final LocalTime newTime) {
+        removeAttendanceDateTime(crew, originalDateTime);
+        AttendanceDateTime newDateTime = originalDateTime.changeTime(newTime);
+        saveAttendanceDateTime(crew, newDateTime);
+        return newDateTime;
     }
 
     public AttendanceDateTime findAttendanceDateTimeByCrewAndDate(final Crew crew, final LocalDate findDate) {
@@ -37,7 +46,7 @@ public class AttendanceBook {
         return attendances.findByLocalDate(findDate);
     }
 
-    public void removeAttendanceDateTime(final Crew crew, final AttendanceDateTime attendanceDateTime) {
+    private void removeAttendanceDateTime(final Crew crew, final AttendanceDateTime attendanceDateTime) {
         Attendances attendances = this.crewAttedances.get(crew);
         attendances.removeAttendanceDateTime(attendanceDateTime);
     }

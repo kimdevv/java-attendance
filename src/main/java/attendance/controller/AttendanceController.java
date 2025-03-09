@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 public class AttendanceController {
 
@@ -23,6 +22,7 @@ public class AttendanceController {
     private final AttendanceModifyView attendanceModifyView;
     private final CrewAttendanceCheckView crewAttendanceCheckView;
     private final CheckAllExpulsionCrewView checkAllExpulsionCrewView;
+    private final AttendanceBook attendanceBook;
 
     public AttendanceController(final GeneralView generalView,
                                 final AttendanceConfirmView attendanceConfirmView,
@@ -34,14 +34,14 @@ public class AttendanceController {
         this.attendanceModifyView = attendanceModifyView;
         this.crewAttendanceCheckView = crewAttendanceCheckView;
         this.checkAllExpulsionCrewView = checkAllExpulsionCrewView;
+        this.attendanceBook = initializeAttendanceBook();
     }
 
     public void run() {
-        AttendanceBook attendanceBook = initializeAttendanceBook();
         while(true) {
             try {
                 FeatureCommand featureCommand = generalView.readCommandWithToday(LocalDate.now());
-                branchByFeatureCommand(featureCommand, attendanceBook);
+                branchByFeatureCommand(featureCommand);
             } catch (IllegalArgumentException exception) {
                 generalView.printExceptionMessage(exception.getMessage());
             }
@@ -55,64 +55,59 @@ public class AttendanceController {
         return attendanceBookInitializer.initialize(crewAttendanceTexts);
     }
 
-    private void branchByFeatureCommand(final FeatureCommand featureCommand, final AttendanceBook attendanceBook) {
+    private void branchByFeatureCommand(final FeatureCommand featureCommand) {
         if (featureCommand.equals(FeatureCommand.ATTENDANCE_CONFIRMATION)) {
-            confirmAttendance(attendanceBook);
+            confirmAttendance();
         }
         if (featureCommand.equals(FeatureCommand.ATTENDANCE_MODIFICATION)) {
-            modifyAttendance(attendanceBook);
+            modifyAttendance();
         }
         if (featureCommand.equals(FeatureCommand.CREW_ATTENDANCE_CHECK)) {
-            checkCrewAttendance(attendanceBook);
+            checkCrewAttendance();
         }
         if (featureCommand.equals(FeatureCommand.EXPULSION_CREW_CHECK)) {
-            checkAllExpulsionCrews(attendanceBook);
+            checkAllExpulsionCrews();
         }
         if (featureCommand.equals(FeatureCommand.QUIT)) {
             System.exit(0);
         }
     }
 
-    private void confirmAttendance(final AttendanceBook attendanceBook) {
-        Crew crew = getCrewIfExistInAttendanceBook(attendanceConfirmView.readCrewNickname(), attendanceBook);
+    private void confirmAttendance() {
+        Crew crew = getCrewIfExistInAttendanceBook(attendanceConfirmView.readCrewNickname());
         LocalDateTime dateTime = attendanceConfirmView.readAttendanceTime();
         AttendanceDateTime attendanceDateTime = new AttendanceDateTime(dateTime);
-        attendanceBook.validateDuplicateAttendanceDate(crew, attendanceDateTime);
         attendanceBook.saveAttendanceDateTime(crew, attendanceDateTime);
         AttendanceStatus attendanceStatus = AttendanceStatusChecker.checkStatus(attendanceDateTime);
         attendanceConfirmView.printAttendanceResult(attendanceDateTime, attendanceStatus);
     }
 
-    private Crew getCrewIfExistInAttendanceBook(final String nickname, final AttendanceBook attendanceBook) {
+    private Crew getCrewIfExistInAttendanceBook(final String nickname) {
         Crew crew = new Crew(nickname);
         attendanceBook.validateRegisteredCrew(crew);
         return crew;
     }
 
-    private void modifyAttendance(final AttendanceBook attendanceBook) {
-        Crew crew = getCrewIfExistInAttendanceBook(attendanceModifyView.readCrewNickname(), attendanceBook);
+    private void modifyAttendance() {
+        Crew crew = getCrewIfExistInAttendanceBook(attendanceModifyView.readCrewNickname());
         int dayToModify = attendanceModifyView.readDayToModify();
         AttendanceDateTime originalDateTime = attendanceBook.findAttendanceDateTimeByCrewAndDate(crew, LocalDate.now().withDayOfMonth(dayToModify));
-        attendanceBook.removeAttendanceDateTime(crew, originalDateTime);
         LocalTime newTime = attendanceModifyView.readTimeToModify();
-        AttendanceDateTime newDateTime = originalDateTime.changeTime(newTime);
-        attendanceBook.saveAttendanceDateTime(crew, newDateTime);
-        AttendanceStatus originalAttendanceStatus = AttendanceStatusChecker.checkStatus(originalDateTime);
-        AttendanceStatus newAttendanceStatus = AttendanceStatusChecker.checkStatus(newDateTime);
-        attendanceModifyView.printAttendanceModifyResult(originalDateTime, originalAttendanceStatus, newDateTime, newAttendanceStatus);
+        AttendanceDateTime newDateTime = attendanceBook.changeCrewAttendanceTime(crew, originalDateTime, newTime);
+        attendanceModifyView.printAttendanceModifyResult(originalDateTime, newDateTime);
     }
 
-    private void checkCrewAttendance(final AttendanceBook attendanceBook) {
-        Crew crew = getCrewIfExistInAttendanceBook(crewAttendanceCheckView.readCrewNickname(), attendanceBook);
+    private void checkCrewAttendance() {
+        Crew crew = getCrewIfExistInAttendanceBook(crewAttendanceCheckView.readCrewNickname());
         List<AttendanceDateTime> crewAttendanceDateTimes = attendanceBook.findCrewAttendancesThisMonth(crew);
-        crewAttendanceCheckView.printCrewAttendances(crew, crewAttendanceDateTimes);
         Map<AttendanceStatus, Long> attendanceStatuses = AttendanceStatusChecker.checkStatuses(crewAttendanceDateTimes);
-        crewAttendanceCheckView.printAttendanceStatuses(attendanceStatuses);
         ExpulsionStatus expulsionStatus = ExpulsionStatus.from(AttendanceStatusChecker.calculateAllAbsent(crewAttendanceDateTimes));
+        crewAttendanceCheckView.printCrewAttendances(crew, crewAttendanceDateTimes);
+        crewAttendanceCheckView.printAttendanceStatuses(attendanceStatuses);
         crewAttendanceCheckView.printExpulsionStatus(expulsionStatus);
     }
 
-    private void checkAllExpulsionCrews(final AttendanceBook attendanceBook) {
+    private void checkAllExpulsionCrews() {
         checkAllExpulsionCrewView.printTitle();
         List<CheckExpulsionResultDto> expulsionResults = new ArrayList<>();
         Set<Crew> allCrews = attendanceBook.getAllCrews();

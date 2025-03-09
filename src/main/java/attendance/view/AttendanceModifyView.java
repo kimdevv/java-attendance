@@ -32,14 +32,11 @@ public class AttendanceModifyView {
         }
     }
 
-    public void printAttendanceModifyResult(final AttendanceDateTime originalDateTime,
-                                            final AttendanceStatusChecker.AttendanceStatus originalAttendanceStatus,
-                                            final AttendanceDateTime newDateTime,
-                                            final AttendanceStatusChecker.AttendanceStatus newAttendanceStatus) {
+    public void printAttendanceModifyResult(final AttendanceDateTime originalDateTime, final AttendanceDateTime newDateTime) {
         LocalDateTime originalLocalDateTime = originalDateTime.getLocalDateTime();
-        String originalAttendanceStatusText = AttendanceStatusTextMaker.make(originalAttendanceStatus);
+        String originalAttendanceStatusText = AttendanceStatusTextMaker.make(AttendanceStatusChecker.checkStatus(originalDateTime));
         LocalDateTime newLocalDateTIme = newDateTime.getLocalDateTime();
-        String newAttendanceStatusText = AttendanceStatusTextMaker.make(newAttendanceStatus);
+        String newAttendanceStatusText = AttendanceStatusTextMaker.make(AttendanceStatusChecker.checkStatus(newDateTime));
         System.out.printf(DATE_TIME_FORMATTER.format(originalLocalDateTime) + " (%s)".formatted(originalAttendanceStatusText)
                 + " -> " + TIME_FORMATTER.format(newLocalDateTIme) + " (%s)".formatted(newAttendanceStatusText)
                 + " 수정 완료!");
