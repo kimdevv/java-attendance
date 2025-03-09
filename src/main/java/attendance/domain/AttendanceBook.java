@@ -44,14 +44,11 @@ public class AttendanceBook {
 
     public List<AttendanceDateTime> findCrewAttendancesThisMonth(final Crew crew) {
         final int dayOfToday = LocalDate.now().getDayOfMonth();
-        List<AttendanceDateTime> crewAttendanceDateTimes = new ArrayList<>();
-        IntStream.range(START_DAY_OF_MONTH, dayOfToday)
+        return IntStream.range(START_DAY_OF_MONTH, dayOfToday)
                 .mapToObj(day -> LocalDateTime.now().withDayOfMonth(day))
-                .filter(dateTime -> !AttendanceDateTime.isWeekend(dateTime))
-                .filter(dateTime -> !Holiday.isHoliday(dateTime))
+                .filter(dateTime -> !AttendanceDateTime.isWeekend(dateTime) && !Holiday.isHoliday(dateTime))
                 .map(dateTime -> findAttendanceDateTimeByCrewAndDateOrAbsent(crew, dateTime.toLocalDate()))
-                .forEach(crewAttendanceDateTimes::add);
-        return crewAttendanceDateTimes;
+                .toList();
     }
 
     private AttendanceDateTime findAttendanceDateTimeByCrewAndDateOrAbsent(final Crew crew, final LocalDate findDate) {
