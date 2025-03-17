@@ -1,14 +1,14 @@
 package attendance.view;
 
-import attendance.domain.AttendanceDateTime;
-import attendance.domain.AttendanceStatusChecker;
-import attendance.domain.Crew;
-import attendance.domain.ExpulsionStatus;
+import attendance.model.AttendanceDateTime;
+import attendance.model.AttendanceStatusChecker;
+import attendance.model.Crew;
+import attendance.model.ExpulsionStatus;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static attendance.domain.AttendanceStatusChecker.*;
+import static attendance.model.AttendanceStatusChecker.*;
 import static attendance.view.GeneralView.*;
 
 public class CrewAttendanceCheckView {

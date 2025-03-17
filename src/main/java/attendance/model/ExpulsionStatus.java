@@ -1,9 +1,6 @@
-package attendance.domain;
+package attendance.model;
 
 import java.util.Arrays;
-import java.util.Map;
-
-import static attendance.domain.AttendanceStatusChecker.*;
 
 public enum ExpulsionStatus {
     EXPULSION(6),

@@ -1,6 +1,6 @@
 package attendance.view;
 
-import attendance.domain.AttendanceStatusChecker.AttendanceStatus;
+import attendance.model.AttendanceStatusChecker.AttendanceStatus;
 
 public class AttendanceStatusTextMaker {
 

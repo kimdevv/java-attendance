@@ -1,7 +1,7 @@
 package attendance.controller;
 
-import attendance.domain.*;
-import attendance.domain.AttendanceStatusChecker.AttendanceStatus;
+import attendance.model.*;
+import attendance.model.AttendanceStatusChecker.AttendanceStatus;
 import attendance.dto.CheckExpulsionResultDto;
 import attendance.view.*;
 

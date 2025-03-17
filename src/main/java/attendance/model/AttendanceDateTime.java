@@ -1,4 +1,4 @@
-package attendance.domain;
+package attendance.model;
 
 import java.time.*;
 import java.time.format.TextStyle;

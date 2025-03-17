@@ -1,4 +1,4 @@
-package attendance.domain;
+package attendance.model;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

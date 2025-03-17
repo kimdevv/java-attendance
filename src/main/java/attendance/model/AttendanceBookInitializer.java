@@ -1,4 +1,4 @@
-package attendance.domain;
+package attendance.model;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

@@ -1,4 +1,4 @@
-package attendance.domain;
+package attendance.model;
 
 import java.util.Objects;
 

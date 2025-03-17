@@ -1,9 +1,8 @@
-package attendance.domain;
+package attendance.model;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

@@ -1,6 +1,6 @@
 package attendance.view;
 
-import attendance.domain.ExpulsionStatus;
+import attendance.model.ExpulsionStatus;
 
 public class ExpulsionStatusTextMaker {
 

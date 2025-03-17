@@ -1,7 +1,6 @@
 package attendance.view;
 
-import attendance.domain.AttendanceStatusChecker.AttendanceStatus;
-import org.junit.jupiter.api.Test;
+import attendance.model.AttendanceStatusChecker.AttendanceStatus;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

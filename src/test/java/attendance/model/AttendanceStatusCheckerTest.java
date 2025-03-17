@@ -1,16 +1,14 @@
-package attendance.domain;
+package attendance.model;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
 import java.util.Map;
 
-import static attendance.domain.AttendanceStatusChecker.*;
+import static attendance.model.AttendanceStatusChecker.*;
 import static org.assertj.core.api.Assertions.*;
 
 public class AttendanceStatusCheckerTest {

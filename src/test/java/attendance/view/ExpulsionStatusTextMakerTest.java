@@ -1,6 +1,6 @@
 package attendance.view;
 
-import attendance.domain.ExpulsionStatus;
+import attendance.model.ExpulsionStatus;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

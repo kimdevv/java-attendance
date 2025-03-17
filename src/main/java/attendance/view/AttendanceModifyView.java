@@ -1,7 +1,7 @@
 package attendance.view;
 
-import attendance.domain.AttendanceDateTime;
-import attendance.domain.AttendanceStatusChecker;
+import attendance.model.AttendanceDateTime;
+import attendance.model.AttendanceStatusChecker;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
