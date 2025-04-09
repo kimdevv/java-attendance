@@ -1,4 +1,4 @@
-package attendance.controller;
+package attendance;
 
 import java.util.Arrays;
 

@@ -1,5 +1,6 @@
 package attendance.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
@@ -21,9 +22,9 @@ public enum Holiday {
         this.day = day;
     }
 
-    public static boolean isHoliday(final LocalDateTime dateTime) {
-        int month = dateTime.getMonthValue();
-        int day = dateTime.getDayOfMonth();
+    public static boolean isHoliday(final LocalDate date) {
+        int month = date.getMonthValue();
+        int day = date.getDayOfMonth();
         return Arrays.stream(values())
                 .anyMatch(holiday -> holiday.month == month && holiday.day == day);
     }

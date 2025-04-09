@@ -1,6 +1,6 @@
 package attendance.controller;
 
-import attendance.controller.FeatureCommand;
+import attendance.FeatureCommand;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
