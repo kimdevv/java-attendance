@@ -42,11 +42,6 @@ public class Crews {
         crew.modifyAttendanceTime(attendanceDate, newAttendanceTime);
     }
 
-    public Map<LocalDate, LocalTime> getCrewAttendances(final String nickname) {
-        Crew crew = findByNickname(nickname);
-        return crew.getAttendances();
-    }
-
     public Map<AttendanceStatusChecker.AttendanceStatus, Long> calculateCrewAttendanceStatuses(final String nickname) {
         Crew crew = findByNickname(nickname);
         return crew.calculateAttendanceStatuses();
@@ -61,5 +56,10 @@ public class Crews {
         return crews.stream()
                 .filter(crew -> crew.calculateExpulsionStatus() != ExpulsionStatus.NONE)
                 .toList();
+    }
+
+    public Map<LocalDate, LocalTime> getCrewAttendances(final String nickname) {
+        Crew crew = findByNickname(nickname);
+        return crew.getAttendances();
     }
 }
