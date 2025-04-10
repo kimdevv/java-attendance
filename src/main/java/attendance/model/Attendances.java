@@ -38,7 +38,7 @@ public class Attendances {
     }
 
     public boolean isAttendedAt(final LocalDate date) {
-        return attendances.get(date) != ABSENT_TIME;
+        return !(attendances.get(date) == null || attendances.get(date).equals(ABSENT_TIME));
     }
 
     public LocalTime findAttendanceTimeAtGivenDate(final LocalDate attendanceDate) {

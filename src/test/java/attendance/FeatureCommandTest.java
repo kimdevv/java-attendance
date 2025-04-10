@@ -1,4 +1,4 @@
-package attendance.controller;
+package attendance;
 
 import attendance.FeatureCommand;
 import org.junit.jupiter.api.Test;

@@ -14,7 +14,7 @@ public class ExpulsionStatusTest {
             "6, EXPULSION"
     })
     @ParameterizedTest
-    void 제적_대상자에_해당하는지_검사한다(long absentCount, ExpulsionStatus expected) {
+    void 제적_대상자에_해당하는지_검사한다(int absentCount, ExpulsionStatus expected) {
         // When
         assertThat(ExpulsionStatus.from(absentCount))
                 .isEqualTo(expected);
