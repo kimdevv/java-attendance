@@ -1,7 +1,6 @@
 package attendance.model;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 
 public enum Holiday {

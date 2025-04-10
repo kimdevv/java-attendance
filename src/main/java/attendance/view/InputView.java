@@ -4,20 +4,15 @@ import attendance.FeatureCommand;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Locale;
 import java.util.Scanner;
 
 public class InputView {
 
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM월 dd일 E요일", Locale.KOREA);
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM월 dd일 E요일 HH:mm", Locale.KOREA);
     private final Scanner scanner = new Scanner(System.in);
 
     public FeatureCommand inputCommandWithDate(final LocalDate date) {
-        System.out.println("오늘은 %s입니다. 기능을 선택해 주세요.".formatted(DATE_FORMATTER.format(date)));
+        System.out.printf("오늘은 %s입니다. 기능을 선택해 주세요.%n", ViewConstants.DATE_FORMATTER.format(date));
         System.out.println("1. 출석 확인");
         System.out.println("2. 출석 수정");
         System.out.println("3. 크루별 출석 기록 확인");
@@ -34,7 +29,7 @@ public class InputView {
     public LocalTime inputAttendanceTime() {
         System.out.println("등교 시간을 입력해 주세요.");
         try {
-            return LocalTime.parse(scanner.nextLine(), TIME_FORMATTER);
+            return LocalTime.parse(scanner.nextLine(), ViewConstants.TIME_FORMATTER);
         } catch (DateTimeParseException exception) {
             throw new IllegalArgumentException("시간을 올바르게 입력해 주세요.");
         }
@@ -54,7 +49,7 @@ public class InputView {
     public LocalTime inputTimeToModify() {
         System.out.println("언제로 변경하겠습니까?");
         try {
-            return LocalTime.parse(scanner.nextLine(), TIME_FORMATTER);
+            return LocalTime.parse(scanner.nextLine(), ViewConstants.TIME_FORMATTER);
         } catch (DateTimeParseException exception) {
             throw new IllegalArgumentException("시간을 올바르게 입력해 주세요.");
         }

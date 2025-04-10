@@ -5,25 +5,18 @@ import attendance.model.AttendanceStatusChecker;
 import attendance.model.AttendanceStatusChecker.AttendanceStatus;
 import attendance.model.Crew;
 import attendance.model.Crews;
+import attendance.model.CrewsInitializer;
 import attendance.model.ExpulsionStatus;
-import attendance.view.FileLineReader;
 import attendance.view.InputView;
 import attendance.view.OutputView;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class AttendanceConsoleManager {
-
-    public static final String ATTENDANCE_FILE_PATH = "src/main/resources/";
-    public static final String ATTENDANCE_FILE_NAME = "attendances.csv";
-    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    public static final int LATE_COUNT_PER_ABSENT = 3;
 
     private final InputView inputView;
     private final OutputView outputView;
@@ -34,7 +27,7 @@ public class AttendanceConsoleManager {
     }
 
     public void run() {
-        Crews crews = initializeCrewsFromFile();
+        Crews crews = CrewsInitializer.initializeFromAttendanceFile();
         while(true) {
             try {
                 FeatureCommand featureCommand = inputView.inputCommandWithDate(LocalDate.now());
@@ -43,23 +36,6 @@ public class AttendanceConsoleManager {
                 outputView.outputExceptionMessage(exception.getMessage());
             }
         }
-    }
-
-    private Crews initializeCrewsFromFile() {
-        List<String> crewAttendanceTexts = FileLineReader.readAllLines(ATTENDANCE_FILE_PATH, ATTENDANCE_FILE_NAME);
-        crewAttendanceTexts.removeFirst();
-        List<Crew> crews = new ArrayList<>();
-        for (String crewAttendanceText : crewAttendanceTexts) {
-            String[] attendanceInformation = crewAttendanceText.split(",");
-            Crew crew = crews.stream()
-                    .filter(registeredCrew -> registeredCrew.getNickname().equalsIgnoreCase(attendanceInformation[0]))
-                    .findFirst()
-                    .orElse(Crew.generateWithAttendancesUntilToday(attendanceInformation[0]));
-            crews.remove(crew);
-            crew.addAttendance(LocalDateTime.parse(attendanceInformation[1], DATE_TIME_FORMATTER));
-            crews.add(crew);
-        }
-        return new Crews(crews);
     }
 
     private void branchByFeatureCommand(final FeatureCommand featureCommand, final Crews crews) {
@@ -81,53 +57,48 @@ public class AttendanceConsoleManager {
     }
 
     private void confirmAttendance(final Crews crews) {
-        Crew crew = crews.findByNickname(inputView.inputCrewNickname());
-        if (crew.isAttendedToday()) {
-            throw new IllegalArgumentException("오늘은 이미 출석하셨습니다. 출석 수정 기능을 이용해 주세요.");
-        }
+        String nickname = inputView.inputCrewNickname();
+        crews.validateCanAttendToday(nickname);
         LocalTime attendanceTime = inputView.inputAttendanceTime();
         LocalDate today = LocalDate.now();
-        crew.addAttendance(today, attendanceTime);
+        crews.addCrewAttendance(nickname, today, attendanceTime);
         outputView.outputAttendanceInformation(today, attendanceTime, AttendanceStatusChecker.checkStatus(today, attendanceTime));
     }
 
     private void modifyAttendance(final Crews crews) {
-        Crew crew = crews.findByNickname(inputView.inputCrewNicknameForModifyAttendance());
+        String nickname = inputView.inputCrewNicknameForModifyAttendance();
         LocalDate attendanceDate = inputView.inputDayOfMonthForModifyAttendance();
         LocalTime newAttendanceTime = inputView.inputTimeToModify();
-        LocalTime originalAttendanceTime = crew.findAttendanceTimeInGivenDate(attendanceDate);
+        LocalTime originalAttendanceTime = crews.findCrewAttendanceTimeAt(nickname, attendanceDate);
+        crews.modifyCrewAttendanceTime(nickname, attendanceDate, newAttendanceTime);
         outputView.outputModifyAttendanceResult(attendanceDate, originalAttendanceTime, newAttendanceTime);
     }
 
     private void checkCrewAttendance(final Crews crews) {
-        Crew crew = crews.findByNickname(inputView.inputCrewNicknameForModifyAttendance());
-        Map<LocalDate, LocalTime> crewAttendances = crew.getAttendances();
-        Map<AttendanceStatus, Long> attendanceStatuses = AttendanceStatusChecker.checkStatuses(crewAttendances);
-        ExpulsionStatus expulsionStatus = ExpulsionStatus.from(calculateTotalAbsentCounts(attendanceStatuses));
-        outputView.outputCrewAttendances(crew, crewAttendances);
+        String nickname = inputView.inputCrewNickname();
+        Map<LocalDate, LocalTime> crewAttendances = crews.getCrewAttendances(nickname);
+        Map<AttendanceStatus, Long> attendanceStatuses = crews.calculateCrewAttendanceStatuses(nickname);
+        ExpulsionStatus expulsionStatus = crews.calculateCrewExpulsionStatus(nickname);
+        outputView.outputCrewAttendances(nickname, crewAttendances);
         outputView.outputAttendanceStatuses(attendanceStatuses);
         outputView.outputExpulsionStatus(expulsionStatus);
     }
 
-    private int calculateTotalAbsentCounts(final Map<AttendanceStatus, Long> attendanceStatuses) {
-        long absentCount = attendanceStatuses.get(AttendanceStatus.ABSENT);
-        absentCount += attendanceStatuses.get(AttendanceStatus.LATE) / LATE_COUNT_PER_ABSENT;
-        return Math.toIntExact(absentCount);
-    }
-
     private void checkAllExpulsionCrews(final Crews crews) {
         outputView.outputCheckExpulsionCrewsTitle();
+        List<Crew> expulsionCrews = crews.findExpulsionCrews();
         List<CheckExpulsionResultDto> expulsionResults = new ArrayList<>();
-        for (Crew crew : crews.getCrews()) {
-            Map<AttendanceStatus, Long> attendanceStatuses = AttendanceStatusChecker.checkStatuses(crew.getAttendances());
-            ExpulsionStatus expulsionStatus = ExpulsionStatus.from(calculateTotalAbsentCounts(attendanceStatuses));
-            if (expulsionStatus == ExpulsionStatus.NONE) {
-                continue;
-            }
-            int totalAbsentCount = calculateTotalAbsentCounts(attendanceStatuses);
-            expulsionResults.add(new CheckExpulsionResultDto(crew.getNickname(),
-                    attendanceStatuses.get(AttendanceStatus.ABSENT), attendanceStatuses.get(AttendanceStatus.LATE), totalAbsentCount, expulsionStatus));
+        for (Crew expulsionCrew : expulsionCrews) {
+            expulsionResults.add(generateExpulsionResult(expulsionCrew));
         }
         outputView.outputCrewExpulsions(expulsionResults);
+    }
+
+    private CheckExpulsionResultDto generateExpulsionResult(Crew expulsionCrew) {
+        Map<AttendanceStatus, Long> attendanceStatuses = expulsionCrew.calculateAttendanceStatuses();
+        ExpulsionStatus expulsionStatus = expulsionCrew.calculateExpulsionStatus();
+        int totalAbsentCount = expulsionCrew.calculateTotalAbsentCounts();
+        return new CheckExpulsionResultDto(expulsionCrew.getNickname(),
+                attendanceStatuses.get(AttendanceStatus.ABSENT), attendanceStatuses.get(AttendanceStatus.LATE), totalAbsentCount, expulsionStatus);
     }
 }

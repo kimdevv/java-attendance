@@ -20,11 +20,4 @@ public enum ExpulsionStatus {
                 .findAny()
                 .orElse(NONE);
     }
-
-    public static boolean isExpulsionCrew(ExpulsionStatus expulsionStatus) {
-        if (expulsionStatus.equals(NONE)) {
-            return false;
-        }
-        return true;
-    }
 }
