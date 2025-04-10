@@ -1,62 +1,74 @@
-//package attendance.model;
-//
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.params.ParameterizedTest;
-//import org.junit.jupiter.params.provider.CsvSource;
-//
-//import java.time.LocalDate;
-//import java.time.Year;
-//import java.util.ArrayList;
-//import java.util.List;
-//
-//import static org.assertj.core.api.Assertions.*;
-//
-//public class AttendancesTest {
-//
-//    private Attendances attendances;
-//
-//    @BeforeEach
-//    void 초기화() {
-//        List<AttendanceDateTime> attendanceDateTimes = new ArrayList<>(List.of(
-//                new AttendanceDateTime(Year.of(2025).atMonth(2).atDay(25).atTime(10, 4)),
-//                new AttendanceDateTime(Year.of(2025).atMonth(2).atDay(26).atTime(10, 4)),
-//                new AttendanceDateTime(Year.of(2025).atMonth(2).atDay(27).atTime(10, 4))
-//        ));
-//        this.attendances = new Attendances(attendanceDateTimes);
-//    }
-//
-//    @CsvSource({
-//            "27, true",
-//            "28, false"
-//    })
-//    @ParameterizedTest
-//    void 주어진_date에_저장된_출석날짜_객체가_있는지_확인한다(int day, boolean expected) {
-//        // Given
-//        AttendanceDateTime findDateTime = new AttendanceDateTime(Year.of(2025).atMonth(2).atDay(day).atTime(10, 0));
-//
-//        // When & Then
-//        assertThat(attendances.isSameDateExists(findDateTime)).isEqualTo(expected);
-//    }
-//
-//    @Test
-//    void 날짜가_주어지면_해당_날짜의_출석날짜_객체를_반환한다() {
-//        // Given
-//        LocalDate findDate = Year.of(2025).atMonth(2).atDay(27);
-//
-//        // When & Then
-//        assertThat(attendances.findByLocalDate(findDate))
-//                .isEqualTo(new AttendanceDateTime(Year.of(2025).atMonth(2).atDay(27).atTime(10, 4)));
-//    }
-//
-//    @Test
-//    void 출석하지_않은_날짜로_찾으면_출석날짜_객체를_반환하지_않는다() {
-//        // Given
-//        LocalDate absentDate = Year.of(2025).atMonth(2).atDay(28);
-//
-//        // When & Then
-//        assertThatThrownBy(() -> attendances.findByLocalDate(absentDate))
-//                .isInstanceOf(IllegalArgumentException.class)
-//                .hasMessage("해당 일자에 출석하지 않았습니다.");
-//    }
-//}
+package attendance.model;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Year;
+import java.util.Map;
+
+import static attendance.model.AttendanceStatusChecker.AttendanceStatus.ABSENT;
+import static attendance.model.AttendanceStatusChecker.AttendanceStatus.ATTENDANCE;
+import static attendance.model.AttendanceStatusChecker.AttendanceStatus.LATE;
+import static org.assertj.core.api.Assertions.*;
+
+public class AttendancesTest {
+
+    private Attendances attendances;
+
+    @BeforeEach
+    void initialize() {
+        attendances = Attendances.generateMonthAttendancesUntilToday();
+    }
+
+    @Test
+    void 해당_날짜에_출석했는지_검사한다() {
+        // Given
+        LocalDate today = LocalDate.now();
+
+        // When & Then
+        assertThat(attendances.isAttendedAt(today)).isFalse();
+    }
+
+    @Test
+    void 출석을_등록한다() {
+        // Given
+        LocalDate attendanceDate = LocalDate.now();
+        LocalTime attendanceTime = LocalTime.of(9, 50);
+
+        // When
+        attendances.addAttendance(attendanceDate, attendanceTime);
+
+        // Then
+        assertThat(attendances.isAttendedAt(attendanceDate)).isTrue();
+    }
+
+    @Test
+    void 출석한_날짜의_출석_시간을_확인한다() {
+        // Given
+        LocalDate attendanceDate = LocalDate.now();
+        LocalTime attendanceTime = LocalTime.of(10, 5);
+        attendances.addAttendance(attendanceDate, attendanceTime);
+
+        // When & Then
+        assertThat(attendances.findAttendanceTimeAt(attendanceDate))
+                .isEqualTo(LocalTime.of(10, 5));
+    }
+
+    @Test
+    void 출석한_시간을_수정한다() {
+        // Given
+        LocalDate attendanceDate = LocalDate.now();
+        LocalTime originalAttendanceTime = LocalTime.of(10, 5);
+        LocalTime newAttendanceTime = LocalTime.of(10, 15);
+        attendances.addAttendance(attendanceDate, originalAttendanceTime);
+
+        // When
+        attendances.modifyAttendanceTime(attendanceDate, newAttendanceTime);
+
+        // Then
+        assertThat(attendances.findAttendanceTimeAt(attendanceDate))
+                .isEqualTo(LocalTime.of(10, 15));
+    }
+}

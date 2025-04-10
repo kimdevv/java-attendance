@@ -36,6 +36,12 @@ public class OutputView {
     public void outputModifyAttendanceResult(final LocalDate attendanceDate, final LocalTime originalAttendanceTime, final LocalTime newAttendanceTime) {
         String originalAttendanceStatusText = AttendanceStatusTextMaker.make(AttendanceStatusChecker.checkStatus(attendanceDate, originalAttendanceTime));
         String newAttendanceStatusText = AttendanceStatusTextMaker.make(AttendanceStatusChecker.checkStatus(attendanceDate, newAttendanceTime));
+        if (originalAttendanceTime == Attendances.ABSENT_TIME) {
+            System.out.printf("%s --:-- (결석)", ViewConstants.DATE_FORMATTER.format(attendanceDate));
+            System.out.printf(" -> %s (%s) 수정 완료!%n%n",
+                    ViewConstants.TIME_FORMATTER.format(newAttendanceTime), newAttendanceStatusText);
+            return;
+        }
         System.out.printf("%s %s (%s) -> %s (%s) 수정 완료!%n%n",
                 ViewConstants.DATE_FORMATTER.format(attendanceDate),
                 ViewConstants.TIME_FORMATTER.format(originalAttendanceTime), originalAttendanceStatusText,

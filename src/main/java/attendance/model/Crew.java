@@ -53,7 +53,7 @@ public class Crew {
     }
 
     public LocalTime findAttendanceTimeAt(final LocalDate attendanceDate) {
-        return attendances.findAttendanceTimeAtGivenDate(attendanceDate);
+        return attendances.findAttendanceTimeAt(attendanceDate);
     }
 
     public void modifyAttendanceTime(final LocalDate attendanceDate, final LocalTime newAttendanceTime) {

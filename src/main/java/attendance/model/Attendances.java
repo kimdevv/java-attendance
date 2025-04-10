@@ -41,7 +41,7 @@ public class Attendances {
         return !(attendances.get(date) == null || attendances.get(date).equals(ABSENT_TIME));
     }
 
-    public LocalTime findAttendanceTimeAtGivenDate(final LocalDate attendanceDate) {
+    public LocalTime findAttendanceTimeAt(final LocalDate attendanceDate) {
         if (attendances.containsKey(attendanceDate)) {
             return attendances.get(attendanceDate);
         }
